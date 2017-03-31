@@ -1,0 +1,123 @@
+#! /bin/bash
+# This script is meant to evoke the algorithm without requiring any input arguments
+#
+
+# Define directory names
+FLYWHEEL_BASE=/flywheel/v0
+MANIFEST_FILE=$FLYWHEEL_BASE/manifest.json
+CONFIG_FILE=$FLYWHEEL_BASE/config.json
+# Base input directory
+INPUT_DIR=$FLYWHEEL_BASE/input
+# Siemens Dat directory
+DAT_DIR=$INPUT_DIR/dat
+# Optional XML and XSL directories
+USER_XML=$INPUT_DIR/user_map
+USER_XSL=$INPUT_DIR/user_stylesheet
+# Output
+OUTPUT_DIR=$FLYWHEEL_BASE/output
+LOG_FILE=$OUTPUT_DIR/siemens_to_ismrmrd.log
+
+(
+  CONTAINER='[flywheel/siemens2ismrmrd]'
+
+  # Configure the ENV according to the original Docker image
+  source ${FLYWHEEL_BASE}/docker-env.sh
+
+  # Check if the input directory is not empty
+  if [[ "$(ls -A $INPUT_DIR)" ]] ; then
+      echo "$CONTAINER  Starting..."
+  else
+      echo "Input directory is empty: $INPUT_DIR"
+      exit 1
+  fi
+
+  # Check if XML directory is present
+  if [[ -e $USER_XML ]]; then
+      xml_file=`find $USER_XML -iname '*.xml'`
+  else
+      xml_file=""
+  fi
+  # Check if XSL directory is present
+  if [[ -e $USER_XSL ]]; then
+      xsl_file=`find $USER_XSL -iname '*.xsl'`
+  else
+      xsl_file=""
+  fi
+
+  # Find input file in input directory with the extension .dat
+  input_file=`find $INPUT_DIR -iname '*.dat'`
+  bni=`basename "$input_file"`
+  filename="${bni%%.*}"
+
+  # If input file found
+  if [[ ! -e $input_file ]]; then
+      echo "No SIEMENS Raw file (.dat) was found within input directory $INPUT_DIR"
+      exit 1
+  fi
+
+  # Get output file extension from config file, if it exists
+  if [[ -e $CONFIG_FILE ]]
+    then
+        echo "Config file is present"
+        debug=`cat $CONFIG_FILE | jq -r '.config.debug'`
+        measNum=`cat $CONFIG_FILE | jq -r '.config.measNum'`
+        pMap=`cat $CONFIG_FILE | jq -r '.config.pMap'`
+        pMapStyle=`cat $CONFIG_FILE | jq -r '.config.pMapStyle'`
+    else
+        echo "Config file is not present, using default values"
+        debug=`cat $MANIFEST_FILE | jq -r '.config.debug.default'`
+        measNum=`cat $MANIFEST_FILE | jq -r '.config.measNum.default'`
+        pMap=`cat $MANIFEST_FILE | jq -r '.config.pMap.default'`
+        pMapStyle=`cat $MANIFEST_FILE | jq -r '.config.pMapStyle.default'`
+    fi
+
+  ### Sort through different configurations to add to command
+  # Define debug command
+  if [[ $debug = 'true' ]]; then
+      debug_cmd="--debug"
+  else
+      debug_cmd=""
+  fi
+  # Define measNum command
+  if [[ $measNum = '1' ]]; then
+      # If measNum is 1, no need to add a command, that is the default
+      # or the input file is VB and measNum does not apply
+      measNum_cmd=""
+  else
+      measNum_cmd="--measNum $measNum"
+  fi
+  # Determine if XML file is given or pMap is defined
+  if [[ -e $xml_file ]]; then
+      pMap_cmd="--user-map $xml_file"
+  elif [[ $pMap ]]; then
+      pMap_cmd="--pMap $pMap"
+  else
+      pMap_cmd=""
+  fi
+  # Determine if XSL file is given or pMapStyle is defined
+  if [[ -e $xsl_file ]]; then
+        pMapStyle_cmd="--user-stylesheet $xsl_file"
+  elif [[ $pMapStyle ]]; then
+      pMapStyle_cmd="--pMapStyle $pMapStyle"
+  else
+      pMapStyle_cmd=""
+  fi
+
+  ## Call siemens_to_ismrmrd
+  echo siemens_to_ismrmrd -f $input_file -o $OUTPUT_DIR/$filename.h5 $debug_cmd $measNum_cmd $pMap_cmd $pMapStyle_cmd
+  siemens_to_ismrmrd -f $input_file -o $OUTPUT_DIR/$filename.h5 $debug_cmd $measNum_cmd $pMap_cmd $pMapStyle_cmd
+
+  # Get a list of the files in the output directory
+  outputs=`find $OUTPUT_DIR -type f -name "*"`
+  # If outputs exist, then go on...
+  if [[ -z $outputs ]]
+      then
+          echo "No results found in output directory... Exiting"
+          exit 1
+      else
+          chmod -R 777 $OUTPUT_DIR
+          echo -e "Wrote: `ls $OUTPUT_DIR`"
+  fi
+
+  exit 0
+) 2>&1 | tee $LOG_FILE
