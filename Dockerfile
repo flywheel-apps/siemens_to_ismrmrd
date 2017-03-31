@@ -24,7 +24,7 @@ RUN mkdir /ismrmrd
 ADD https://github.com/ismrmrd/ismrmrd/archive/v1.3.2.tar.gz /ismrmrd
 # Unpack the tar.gz
 RUN cd /ismrmrd && tar -zxvf v1.3.2.tar.gz
-# Install
+# Install ISMRMRD code
 RUN cd ismrmrd/ismrmrd-1.3.2 && \
     mkdir build && \
     cd build && \
@@ -50,6 +50,12 @@ RUN cd siemens_to_ismrmrd/siemens_to_ismrmrd-1.0.1 && \
     make && \
     sudo make install
 
+# Install wget in order to install jq
+RUN apt-get update && apt-get -y install wget
+# Install jq to parse the JSON config file
+RUN wget -N -qO- -O /usr/bin/jq http://stedolan.github.io/jq/download/linux64/jq
+RUN chmod +x /usr/bin/jq
+
 # Make directory for flywheel spec (v0)
 ENV FLYWHEEL /flywheel/v0
 RUN mkdir -p ${FLYWHEEL}
@@ -59,7 +65,8 @@ COPY manifest.json ${FLYWHEEL}
 COPY run ${FLYWHEEL}/run
 RUN chmod +x ${FLYWHEEL}/run
 
-# TODO: preserve environment variables
+# ENV preservation for Flywheel Engine
+RUN env -u HOSTNAME -u PWD > ${FLYWHEEL}/docker-env.sh
 
 # Configure entrypoint
-#ENTRYPOINT ["/flywheel/v0/run"]
+ENTRYPOINT ["/flywheel/v0/run"]
