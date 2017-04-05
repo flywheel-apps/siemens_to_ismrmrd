@@ -104,8 +104,19 @@ LOG_FILE=$OUTPUT_DIR/siemens_to_ismrmrd.log
   fi
 
   ## Call siemens_to_ismrmrd
-  echo siemens_to_ismrmrd -f $input_file -o $OUTPUT_DIR/$filename.h5 $debug_cmd $measNum_cmd $pMap_cmd $pMapStyle_cmd
-  siemens_to_ismrmrd -f $input_file -o $OUTPUT_DIR/$filename.h5 $debug_cmd $measNum_cmd $pMap_cmd $pMapStyle_cmd
+  cmd="siemens_to_ismrmrd -f $input_file -o $OUTPUT_DIR/$filename.h5 $debug_cmd $measNum_cmd $pMap_cmd $pMapStyle_cmd"
+  echo $cmd
+  # cd into output directory incase of debug files being generated
+  cd $OUTPUT_DIR && $cmd
+
+  # Rename the debug files, if present
+  for debugfile in 'config_buffer.xprot' 'processed.xml' 'xml_raw.xml'
+  do
+      debugfile_full=$OUTPUT_DIR/$debugfile
+      if [[ -e $debugfile_full ]]; then
+	    mv $debugfile_full $OUTPUT_DIR/"$filename"_"$debugfile"
+      fi
+  done
 
   # Get a list of the files in the output directory
   outputs=`find $OUTPUT_DIR -type f -name "*"`
