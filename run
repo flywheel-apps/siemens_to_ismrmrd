@@ -18,7 +18,7 @@ OUTPUT_DIR=$FLYWHEEL_BASE/output
 LOG_FILE=$OUTPUT_DIR/siemens_to_ismrmrd.log
 
 (
-  CONTAINER='[flywheel/siemens2ismrmrd]'
+  CONTAINER='[flywheel/siemens_to_ismrmrd]'
 
   # Configure the ENV according to the original Docker image
   source ${FLYWHEEL_BASE}/docker-env.sh
