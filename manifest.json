@@ -56,7 +56,7 @@
     "label": "Siemens to ISMRM-RD Converter", 
     "license": "Other", 
     "maintainer": "Jennifer Reiter <jenniferreiter@invenshure.com>", 
-    "name": "mriqc", 
+    "name": "siemens_to_ismrmrd", 
     "source": "https://github.com/flywheel-apps/siemens_to_ismrmrd", 
     "url": "https://github.com/ismrmrd/siemens_to_ismrmrd", 
     "version": "0.1"
