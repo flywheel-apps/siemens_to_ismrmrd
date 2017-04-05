@@ -23,7 +23,7 @@
         }
     }, 
     "custom": {
-        "docker-image": "flywheel/siemens2ismrmrd:v0.1"
+        "docker-image": "flywheel/siemens_to_ismrmrd:v0.1"
     }, 
     "description": "The Siemens to ISMRM-RD Convertor is used to convert data from Siemens raw data format (.dat) into ISMRM-RD raw data format (.h5).", 
     "inputs": {
