@@ -45,13 +45,13 @@ LOG_FILE=$OUTPUT_DIR/siemens_to_ismrmrd.log
   fi
 
   # Find input file in input directory with the extension .dat
-  input_file=`find $INPUT_DIR -iname '*.dat'`
+  input_file=`find $DAT_DIR -iname '*.dat'`
   bni=`basename "$input_file"`
   filename="${bni%%.*}"
 
   # If input file found
   if [[ ! -e $input_file ]]; then
-      echo "No SIEMENS Raw file (.dat) was found within input directory $INPUT_DIR"
+      echo "No SIEMENS Raw file (.dat) was found within input directory $DAT_DIR"
       exit 1
   fi
 
