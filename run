@@ -16,7 +16,7 @@ USER_XSL=$INPUT_DIR/user_stylesheet
 # Output
 OUTPUT_DIR=$FLYWHEEL_BASE/output
 
-CONTAINER='[flywheel/siemens_to_ismrmrd]'
+CONTAINER='[flywheel/siemens-to-ismrmrd]'
 
 # Configure the ENV according to the original Docker image
 source ${FLYWHEEL_BASE}/docker-env.sh
