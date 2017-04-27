@@ -30,14 +30,22 @@ else
 fi
 
 # Check if XML directory is present
-if [[ -e $USER_XML ]]; then
+if [[ -e $USER_XML ]] ; then
     xml_file=`find $USER_XML -iname '*.xml'`
+    if [[ ! -e $xml_file ]]; then
+        echo "No parameter map (.xml) was found within input directory $USER_XML"
+        exit 1
+    fi
 else
     xml_file=""
 fi
 # Check if XSL directory is present
-if [[ -e $USER_XSL ]]; then
+if [[ -e $USER_XSL ]] ; then
     xsl_file=`find $USER_XSL -iname '*.xsl'`
+    if [[ ! -e $xsl_file ]]; then
+        echo "No parameter stylesheet (.xsl) was found within input directory $USER_XSL"
+        exit 1
+    fi
 else
     xsl_file=""
 fi
@@ -48,36 +56,31 @@ bni=`basename "$input_file"`
 filename="${bni%%.*}"
 
 # If input file found
-if [[ ! -e $input_file ]]; then
+if [[ ! -e $input_file ]] ; then
     echo "No SIEMENS Raw file (.dat) was found within input directory $DAT_DIR"
     exit 1
 fi
 
 # Get output file extension from config file, if it exists
-if [[ -e $CONFIG_FILE ]]
-  then
-      echo "Config file is present"
-      debug=`cat $CONFIG_FILE | jq -r '.config.debug'`
-      measNum=`cat $CONFIG_FILE | jq -r '.config.measNum'`
-      pMap=`cat $CONFIG_FILE | jq -r '.config.pMap'`
-      pMapStyle=`cat $CONFIG_FILE | jq -r '.config.pMapStyle'`
-  else
-      echo "Config file is not present, using default values"
-      debug=`cat $MANIFEST_FILE | jq -r '.config.debug.default'`
-      measNum=`cat $MANIFEST_FILE | jq -r '.config.measNum.default'`
-      pMap=`cat $MANIFEST_FILE | jq -r '.config.pMap.default'`
-      pMapStyle=`cat $MANIFEST_FILE | jq -r '.config.pMapStyle.default'`
-  fi
+if [[ -e $CONFIG_FILE ]] ; then
+    echo "Config file is present"
+    debug=`cat $CONFIG_FILE | jq -r '.config.debug'`
+    measNum=`cat $CONFIG_FILE | jq -r '.config.measNum'`
+else
+    echo "Config file is not present, using default values"
+    debug=`cat $MANIFEST_FILE | jq -r '.config.debug.default'`
+    measNum=`cat $MANIFEST_FILE | jq -r '.config.measNum.default'`
+fi
 
 ### Sort through different configurations to add to command
 # Define debug command
-if [[ $debug = 'true' ]]; then
+if [[ $debug = 'true' ]] ; then
     debug_cmd="--debug"
 else
     debug_cmd=""
 fi
 # Define measNum command
-if [[ $measNum = '1' ]]; then
+if [[ $measNum = '1' ]] ; then
     # If measNum is 1, no need to add a command, that is the default
     # or the input file is VB and measNum does not apply
     measNum_cmd=""
@@ -85,18 +88,14 @@ else
     measNum_cmd="--measNum $measNum"
 fi
 # Determine if XML file is given or pMap is defined
-if [[ -e $xml_file ]]; then
+if [[ $xml_file ]] ; then
     pMap_cmd="--user-map $xml_file"
-elif [[ $pMap ]]; then
-    pMap_cmd="--pMap $pMap"
 else
     pMap_cmd=""
 fi
 # Determine if XSL file is given or pMapStyle is defined
-if [[ -e $xsl_file ]]; then
+if [[ $xsl_file ]] ; then
     pMapStyle_cmd="--user-stylesheet $xsl_file"
-elif [[ $pMapStyle ]]; then
-    pMapStyle_cmd="--pMapStyle $pMapStyle"
 else
     pMapStyle_cmd=""
 fi
@@ -109,7 +108,7 @@ cd $OUTPUT_DIR && siemens_to_ismrmrd -f $input_file -o $OUTPUT_DIR/$filename.h5 
 for debugfile in 'config_buffer.xprot' 'processed.xml' 'xml_raw.xml'
 do
     debugfile_full=$OUTPUT_DIR/$debugfile
-    if [[ -e $debugfile_full ]]; then
+    if [[ -e $debugfile_full ]] ; then
         mv $debugfile_full $OUTPUT_DIR/"$filename"_"$debugfile"
     fi
 done
@@ -117,13 +116,12 @@ done
 # Get a list of the files in the output directory
 outputs=`find $OUTPUT_DIR -type f -name "*"`
 # If outputs exist, then go on...
-if [[ -z $outputs ]]
-    then
-        echo "No results found in output directory... Exiting"
-        exit 1
-    else
-        chmod -R 777 $OUTPUT_DIR
-        echo -e "Wrote: `ls $OUTPUT_DIR`"
+if [[ -z $outputs ]] ; then
+    echo "No results found in output directory... Exiting"
+    exit 1
+else
+    chmod -R 777 $OUTPUT_DIR
+    echo -e "Wrote: `ls $OUTPUT_DIR`"
 fi
 
 exit 0
