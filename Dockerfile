@@ -34,7 +34,8 @@ RUN cd $ISMRMRD_HOME && \
     cd build && \
     cmake .. && \
     make && \
-    sudo make install
+    sudo make install && \
+    sudo ldconfig
 
 # SET LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH /usr/local/lib
