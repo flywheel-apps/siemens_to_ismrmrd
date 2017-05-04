@@ -32,22 +32,28 @@ fi
 # Check if XML directory is present
 if [[ -e $USER_XML ]] ; then
     xml_file=`find $USER_XML -iname '*.xml'`
-    if [[ ! -e $xml_file ]]; then
+    if [[ ! -e "$xml_file" ]]; then
         echo "No parameter map (.xml) was found within input directory $USER_XML"
         exit 1
     fi
+    # Replace spaces with _
+    xml_file_nospaces="${xml_file// /_}"
+    mv "$xml_file" "$xml_file_nospaces"
 else
-    xml_file=""
+    xml_file_nospaces=""
 fi
 # Check if XSL directory is present
 if [[ -e $USER_XSL ]] ; then
     xsl_file=`find $USER_XSL -iname '*.xsl'`
-    if [[ ! -e $xsl_file ]]; then
+    if [[ ! -e "$xsl_file" ]]; then
         echo "No parameter stylesheet (.xsl) was found within input directory $USER_XSL"
         exit 1
     fi
+    # Replace spaces with _
+    xsl_file_nospaces="${xsl_file// /_}"
+    mv "$xsl_file" "$xsl_file_nospaces"
 else
-    xsl_file=""
+    xsl_file_nospaces=""
 fi
 
 # Find input file in input directory with the extension .dat
@@ -56,10 +62,13 @@ bni=`basename "$input_file"`
 filename="${bni%%.*}"
 
 # If input file found
-if [[ ! -e $input_file ]] ; then
+if [[ ! -e "$input_file" ]] ; then
     echo "No SIEMENS Raw file (.dat) was found within input directory $DAT_DIR"
     exit 1
 fi
+# Replace spaces with _
+filename_nospaces=${filename// /_}
+mv "$input_file" $DAT_DIR/$filename_nospaces.dat
 
 # Get output file extension from config file, if it exists
 if [[ -e $CONFIG_FILE ]] ; then
@@ -88,28 +97,28 @@ else
     measNum_cmd="--measNum $measNum"
 fi
 # Determine if XML file is given or pMap is defined
-if [[ $xml_file ]] ; then
-    pMap_cmd="--user-map $xml_file"
+if [[ $xml_file_nospaces ]] ; then
+    pMap_cmd="--user-map $xml_file_nospaces"
 else
     pMap_cmd=""
 fi
 # Determine if XSL file is given or pMapStyle is defined
-if [[ $xsl_file ]] ; then
-    pMapStyle_cmd="--user-stylesheet $xsl_file"
+if [[ $xsl_file_nospaces ]] ; then
+    pMapStyle_cmd="--user-stylesheet $xsl_file_nospaces"
 else
     pMapStyle_cmd=""
 fi
 
 ## Call siemens_to_ismrmrd
 # cd into output directory incase of debug files being generated
-cd $OUTPUT_DIR && siemens_to_ismrmrd -f $input_file -o $OUTPUT_DIR/$filename.h5 $debug_cmd $measNum_cmd $pMap_cmd $pMapStyle_cmd
+cd $OUTPUT_DIR && siemens_to_ismrmrd -f $DAT_DIR/$filename_nospaces.dat -o $OUTPUT_DIR/$filename_nospaces.h5 $debug_cmd $measNum_cmd $pMap_cmd $pMapStyle_cmd
 
 # Rename the debug files, if present
 for debugfile in 'config_buffer.xprot' 'processed.xml' 'xml_raw.xml'
 do
     debugfile_full=$OUTPUT_DIR/$debugfile
     if [[ -e $debugfile_full ]] ; then
-        mv $debugfile_full $OUTPUT_DIR/"$filename"_"$debugfile"
+        mv $debugfile_full $OUTPUT_DIR/"$filename_nospaces"_"$debugfile"
     fi
 done
 
