@@ -13,7 +13,33 @@
     }
   },
   "custom": {
-    "docker-image": "flywheel/siemens_to_ismrmrd:v0.1"
+    "docker-image": "flywheel/siemens_to_ismrmrd:v0.1",
+    "gear-builder": {
+      "category": "converter"
+    },
+    "flywheel": {
+      "classification": {
+        "species": [
+          "Phantom",
+          "Human",
+          "Animal",
+          "Other"
+        ],
+        "organ": [
+          "Any"
+        ],
+        "therapeutic_area": [
+          "Any"
+        ],
+        "modality": [
+          "MR"
+        ],
+        "function": [
+          "Conversion"
+        ]
+      },
+      "suite": "Conversion"
+    }
   },
   "description": "The Siemens to ISMRM-RD Converter (siemens_to_ismrmrd v1.0.1, ismrmrd v1.3.2) is used to convert data from Siemens raw data format (.dat) to ISMRM-RD raw data format (.h5).",
   "inputs": {
@@ -47,7 +73,7 @@
   "license": "Other",
   "maintainer": "Jennifer Reiter <jenniferreiter@invenshure.com>",
   "name": "siemens-to-ismrmrd",
-  "source": "https://github.com/flywheel-apps/siemens_to_ismrmrd",
-  "url": "https://github.com/ismrmrd/siemens_to_ismrmrd",
+  "source": "https://github.com/ismrmrd/siemens_to_ismrmrd",
+  "url": "https://github.com/flywheel-apps/siemens_to_ismrmrd",
   "version": "0.1"
 }
