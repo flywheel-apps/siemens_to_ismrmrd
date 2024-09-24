@@ -56,8 +56,7 @@ RUN cd siemens_to_ismrmrd/siemens_to_ismrmrd-1.0.1 && \
 # Install wget in order to install jq
 RUN apt-get update && apt-get -y install wget
 # Install jq to parse the JSON config file
-RUN wget -N -qO- -O /usr/bin/jq http://stedolan.github.io/jq/download/linux64/jq
-RUN chmod +x /usr/bin/jq
+RUN apt-get update && apt-get install -y jq
 
 # Make directory for flywheel spec (v0)
 ENV FLYWHEEL /flywheel/v0
