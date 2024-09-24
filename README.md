@@ -14,6 +14,7 @@ For more information on the ISMRMRD format see [ISMRMRD's documentation](http://
 To build the image:
 ```
 git clone https://github.com/flywheel-apps/siemens_to_ismrmrd.git
+cd siemens_to_ismrmrd
 ./build.sh
 ```
 
